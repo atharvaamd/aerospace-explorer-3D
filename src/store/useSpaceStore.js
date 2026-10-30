@@ -24,8 +24,10 @@ export const useSpaceStore = create((set) => ({
   planetA: PLANETS_DATA.find((p) => p.id === 'earth') || PLANETS_DATA[3],
   planetB: PLANETS_DATA.find((p) => p.id === 'mars') || PLANETS_DATA[4],
 
-  // Camera reset trigger
+  // Camera triggers
   resetCameraCounter: 0,
+  cameraAngleTrigger: null, // { type: 'top' | 'side' | 'isometric', id: timestamp }
+  zoomTrigger: null,         // { dir: 1 (in) | -1 (out), id: timestamp }
 
   // Actions
   setSelectedPlanet: (planet) => set({ selectedPlanet: planet }),
@@ -59,4 +61,12 @@ export const useSpaceStore = create((set) => ({
     selectedPlanet: null,
     resetCameraCounter: state.resetCameraCounter + 1,
   })),
+
+  setCameraAngle: (angle) => set({
+    cameraAngleTrigger: { type: angle, id: Date.now() },
+  }),
+
+  zoomCamera: (dir) => set({
+    zoomTrigger: { dir, id: Date.now() },
+  }),
 }));

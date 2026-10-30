@@ -139,9 +139,10 @@ export default function Solarsystem() {
           enablePan
           enableZoom
           enableRotate
-          dampingFactor={0.06}
-          minDistance={2.5}
-          maxDistance={350}
+          enableDamping
+          dampingFactor={0.07}
+          minDistance={1.0}
+          maxDistance={600}
         />
 
         {/* Dynamic camera focusing logic */}

@@ -4,6 +4,7 @@ import Navbar from './components/ui/Navbar';
 import ControlsOverLay from './components/ui/ControlsOverLay';
 import InfoPanel from './components/ui/InfoPanel';
 import CompareModal from './components/ui/CompareModal';
+import CameraControlsWidget from './components/ui/CameraControlsWidget';
 
 export default function App() {
   return (
@@ -16,6 +17,9 @@ export default function App() {
 
       {/* Dynamic Right Info HUD Panel for Selected Planet */}
       <InfoPanel />
+
+      {/* Left Floating Camera Angles & Zoom Controls Dock */}
+      <CameraControlsWidget />
 
       {/* Bottom Floating Playback & Speed Controls Dock */}
       <ControlsOverLay />
