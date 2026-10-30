@@ -4,6 +4,11 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useSpaceStore } from '../../store/useSpaceStore';
 import { setPlanetPosition } from '../../utils/planetRegistry';
+import {
+  getCelestialTexture,
+  getEarthCloudsTexture,
+  getSaturnRingTexture,
+} from '../../utils/textureGenerator';
 import OrbitLine from './OrbitLine';
 
 export default function CelestialBody({ planet }) {
@@ -29,6 +34,34 @@ export default function CelestialBody({ planet }) {
     incrementDays,
     isCompareOpen,
   } = useSpaceStore();
+
+  // Procedural Realistic Photorealistic Textures
+  const planetTexture = useMemo(() => getCelestialTexture(planet.id), [planet.id]);
+  const cloudsTexture = useMemo(() => (planet.hasClouds ? getEarthCloudsTexture() : null), [planet.hasClouds]);
+  const saturnRingsTexture = useMemo(() => (planet.hasRings ? getSaturnRingTexture() : null), [planet.hasRings]);
+  const moonTexture = useMemo(() => (planet.id === 'earth' ? getCelestialTexture('mercury') : null), [planet.id]);
+
+  const surfaceProps = useMemo(() => {
+    switch (planet.id) {
+      case 'mercury':
+        return { roughness: 0.95, metalness: 0.05 };
+      case 'venus':
+        return { roughness: 0.45, metalness: 0.08 };
+      case 'earth':
+        return { roughness: 0.4, metalness: 0.15 };
+      case 'mars':
+        return { roughness: 0.85, metalness: 0.1 };
+      case 'jupiter':
+        return { roughness: 0.6, metalness: 0.05 };
+      case 'saturn':
+        return { roughness: 0.55, metalness: 0.05 };
+      case 'uranus':
+      case 'neptune':
+        return { roughness: 0.45, metalness: 0.05 };
+      default:
+        return { roughness: 0.7, metalness: 0.15 };
+    }
+  }, [planet.id]);
 
   const isSelected = selectedPlanet?.id === planet.id;
   const isHovered = hoveredPlanet?.id === planet.id;
@@ -97,15 +130,26 @@ export default function CelestialBody({ planet }) {
         >
           <sphereGeometry args={[planet.size, 48, 48]} />
           {planet.id === 'sun' ? (
-            <meshBasicMaterial color={planet.color} />
+            <meshBasicMaterial map={planetTexture} />
           ) : (
             <meshStandardMaterial
-              color={planet.color}
-              roughness={0.7}
-              metalness={0.15}
-              emissive={planet.emissiveColor}
-              emissiveIntensity={0.25}
+              map={planetTexture}
+              roughness={surfaceProps.roughness}
+              metalness={surfaceProps.metalness}
             />
+          )}
+
+          {/* Earth Atmosphere Blue Rayleigh Rim Glow */}
+          {planet.id === 'earth' && (
+            <mesh>
+              <sphereGeometry args={[planet.size * 1.05, 32, 32]} />
+              <meshBasicMaterial
+                color="#38bdf8"
+                transparent
+                opacity={0.16}
+                side={THREE.BackSide}
+              />
+            </mesh>
           )}
 
           {/* Earth Clouds Layer */}
@@ -113,10 +157,11 @@ export default function CelestialBody({ planet }) {
             <mesh ref={cloudsRef}>
               <sphereGeometry args={[planet.size * 1.025, 32, 32]} />
               <meshStandardMaterial
+                map={cloudsTexture}
                 color="#ffffff"
                 transparent
-                opacity={0.35}
-                roughness={1}
+                opacity={0.65}
+                roughness={0.9}
                 depthWrite={false}
               />
             </mesh>
@@ -125,12 +170,13 @@ export default function CelestialBody({ planet }) {
           {/* Saturn Rings */}
           {planet.hasRings && (
             <mesh rotation-x={Math.PI / 2.8} rotation-y={Math.PI / 12}>
-              <ringGeometry args={[planet.ringInnerRadius, planet.ringOuterRadius, 64]} />
+              <ringGeometry args={[planet.ringInnerRadius, planet.ringOuterRadius, 96]} />
               <meshStandardMaterial
-                color="#e5c185"
-                opacity={0.88}
+                map={saturnRingsTexture}
+                color="#fde047"
+                opacity={0.95}
                 transparent
-                roughness={0.5}
+                roughness={0.6}
                 side={THREE.DoubleSide}
               />
             </mesh>
@@ -159,16 +205,18 @@ export default function CelestialBody({ planet }) {
               <meshBasicMaterial
                 color="#ffaa00"
                 transparent
-                opacity={0.25}
+                opacity={0.32}
+                blending={THREE.AdditiveBlending}
                 side={THREE.BackSide}
               />
             </mesh>
             <mesh>
-              <sphereGeometry args={[planet.size * 1.35, 32, 32]} />
+              <sphereGeometry args={[planet.size * 1.4, 32, 32]} />
               <meshBasicMaterial
                 color="#ff5500"
                 transparent
-                opacity={0.12}
+                opacity={0.16}
+                blending={THREE.AdditiveBlending}
                 side={THREE.BackSide}
               />
             </mesh>
@@ -180,7 +228,7 @@ export default function CelestialBody({ planet }) {
           <group ref={moonGroupRef}>
             <mesh position={[2.6, 0.4, 0]}>
               <sphereGeometry args={[0.26, 24, 24]} />
-              <meshStandardMaterial color="#cbd5e1" roughness={0.9} />
+              <meshStandardMaterial map={moonTexture} roughness={0.95} />
             </mesh>
           </group>
         )}
