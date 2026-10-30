@@ -27,6 +27,7 @@ export default function CelestialBody({ planet }) {
     showOrbits,
     showLabels,
     incrementDays,
+    isCompareOpen,
   } = useSpaceStore();
 
   const isSelected = selectedPlanet?.id === planet.id;
@@ -197,12 +198,13 @@ export default function CelestialBody({ planet }) {
           </mesh>
         )}
 
-        {/* Floating 2D HUD Label */}
-        {showLabels && (
+        {/* Floating 2D HUD Label (hidden during comparison modal) */}
+        {showLabels && !isCompareOpen && (
           <Html
             position={[0, planet.size + 1.2, 0]}
             center
             distanceFactor={50}
+            zIndexRange={[10, 0]}
             className="pointer-events-auto"
           >
             <button
