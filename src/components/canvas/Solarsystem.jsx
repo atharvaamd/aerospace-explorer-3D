@@ -25,13 +25,19 @@ function AsteroidBelt() {
       new THREE.Color('#403933'), // Basaltic mineral
     ];
 
+    const beltSemiMajor = 33.5;
+    const beltEccentricity = 0.06;
+
     for (let i = 0; i < 2000; i++) {
       const angle = Math.random() * Math.PI * 2;
-      // Main belt between Mars (24) and Jupiter (33)
-      const distance = 27.2 + Math.random() * 4.2;
-      const x = Math.cos(angle) * distance;
-      const z = Math.sin(angle) * distance;
-      const y = (Math.random() - 0.5) * 1.8;
+      const spread = (Math.random() - 0.5) * 3.5;
+      const a = beltSemiMajor + spread;
+      const b = a * Math.sqrt(1 - beltEccentricity * beltEccentricity);
+
+      // Elliptical coordinates with focal Sun offset
+      const x = a * (Math.cos(angle) - beltEccentricity);
+      const z = b * Math.sin(angle);
+      const y = (Math.random() - 0.5) * 1.6;
       coords.push(x, y, z);
 
       const col = colorPalette[Math.floor(Math.random() * colorPalette.length)];

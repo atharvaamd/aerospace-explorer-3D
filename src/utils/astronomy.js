@@ -43,7 +43,6 @@ export function formatSimulatedDate(simulatedDays) {
 
 // Solve Kepler's Equation M = E - e * sin(E) using Newton-Raphson iteration
 export function solveKepler(M, e) {
-  // Normalize M to [0, 2pi]
   let m = M % (Math.PI * 2);
   if (m < 0) m += Math.PI * 2;
 
@@ -65,7 +64,6 @@ export function getEllipticalCoordinates(planet, simulatedDays) {
   const a = planet.distanceFromSun;
   const e = planet.eccentricity || 0;
   const b = a * Math.sqrt(Math.max(0.001, 1 - e * e));
-  const omega = planet.perihelionAngle || 0;
 
   // Mean anomaly M = M_0 + (2pi / T) * t
   const m0 = PLANET_BASE_MEAN_ANOMALY[planet.id] || 0;
@@ -75,15 +73,8 @@ export function getEllipticalCoordinates(planet, simulatedDays) {
   const E = solveKepler(meanAnomaly, e);
 
   // Position in ellipse coordinates where Sun is at the origin focus (0, 0)
-  // Shifted by -a*e along perihelion axis
-  const xPrime = a * (Math.cos(E) - e);
-  const zPrime = b * Math.sin(E);
-
-  // Rotate by argument of perihelion (omega)
-  const cosOmega = Math.cos(omega);
-  const sinOmega = Math.sin(omega);
-  const x = xPrime * cosOmega - zPrime * sinOmega;
-  const z = xPrime * sinOmega + zPrime * cosOmega;
+  const x = a * (Math.cos(E) - e);
+  const z = b * Math.sin(E);
 
   const currentDist = Math.hypot(x, z);
   const trueAnomaly = Math.atan2(z, x);
@@ -98,25 +89,19 @@ export function getEllipticalCoordinates(planet, simulatedDays) {
 }
 
 // Generate an array of 3D points forming the complete elliptical orbit trajectory (Sun at focus)
-export function getEllipticalOrbitPoints(planet, segments = 180) {
-  if (!planet || planet.distanceFromSun <= 0) return [];
+export function getEllipticalOrbitPoints(planet, segments = 240) {
+  if (!planet || planet.distanceFromSun <= 0) return new Float32Array(0);
 
   const a = planet.distanceFromSun;
   const e = planet.eccentricity || 0;
   const b = a * Math.sqrt(Math.max(0.001, 1 - e * e));
-  const omega = planet.perihelionAngle || 0;
-
-  const cosOmega = Math.cos(omega);
-  const sinOmega = Math.sin(omega);
 
   const points = [];
   for (let i = 0; i <= segments; i++) {
     const phi = (i / segments) * Math.PI * 2;
-    const xPrime = a * (Math.cos(phi) - e);
-    const zPrime = b * Math.sin(phi);
-
-    const x = xPrime * cosOmega - zPrime * sinOmega;
-    const z = xPrime * sinOmega + zPrime * cosOmega;
+    // Exactly matches getEllipticalCoordinates so planet is always 100% on rail
+    const x = a * (Math.cos(phi) - e);
+    const z = b * Math.sin(phi);
 
     points.push(x, 0, z);
   }
