@@ -153,6 +153,31 @@ export default function InfoPanel() {
           </div>
         </div>
 
+        {/* Keplerian Elliptical Orbit Data */}
+        {selectedPlanet.id !== 'sun' && (
+          <div className="p-3.5 rounded-2xl bg-slate-800/50 border border-cyan-500/30">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5" />
+                <span>Keplerian Elliptical Orbit</span>
+              </span>
+              <span className="text-xs font-mono font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-800">
+                e = {selectedPlanet.eccentricity}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2 rounded-xl bg-slate-900/60 border border-slate-700/50">
+                <span className="text-[10px] text-slate-400 block">Perihelion (Closest)</span>
+                <span className="font-mono font-bold text-white text-xs">{selectedPlanet.perihelionKm}M km</span>
+              </div>
+              <div className="p-2 rounded-xl bg-slate-900/60 border border-slate-700/50">
+                <span className="text-[10px] text-slate-400 block">Aphelion (Farthest)</span>
+                <span className="font-mono font-bold text-white text-xs">{selectedPlanet.aphelionKm}M km</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Description */}
         <div className="p-3.5 rounded-2xl bg-slate-800/40 border border-slate-700/50">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">

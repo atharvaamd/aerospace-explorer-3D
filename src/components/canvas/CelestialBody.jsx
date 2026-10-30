@@ -4,7 +4,7 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useSpaceStore } from '../../store/useSpaceStore';
 import { setPlanetPosition } from '../../utils/planetRegistry';
-import { getPlanetOrbitalAngle } from '../../utils/astronomy';
+import { getEllipticalCoordinates } from '../../utils/astronomy';
 import OrbitLine from './OrbitLine';
 import AtmosphereGlow from './AtmosphereGlow';
 import {
@@ -86,13 +86,11 @@ export default function CelestialBody({ planet }) {
   }, [planet.axialTilt]);
 
   useFrame((state, delta) => {
-    // 1. Exact Keplerian orbital calculation based on simulated timeline (supports date jumps!)
+    // 1. Exact Keplerian Elliptical Position (Sun at Focus, Variable Speed)
     const currentDays = useSpaceStore.getState().simulatedDays;
 
     if (planet.distanceFromSun > 0 && planet.orbitalPeriod > 0) {
-      const angle = getPlanetOrbitalAngle(planet.id, currentDays);
-      const x = Math.cos(angle) * planet.distanceFromSun;
-      const z = Math.sin(angle) * planet.distanceFromSun;
+      const { x, z } = getEllipticalCoordinates(planet, currentDays);
 
       if (planetOrbitGroupRef.current) {
         planetOrbitGroupRef.current.position.set(x, 0, z);
@@ -127,9 +125,9 @@ export default function CelestialBody({ planet }) {
 
   return (
     <>
-      {/* 2D Orbital Trajectory Track */}
+      {/* Keplerian Elliptical Orbit Trajectory Track */}
       {showOrbits && planet.distanceFromSun > 0 && (
-        <OrbitLine radius={planet.distanceFromSun} isSelected={isSelected} />
+        <OrbitLine planet={planet} isSelected={isSelected} />
       )}
 
       {/* Planet Dynamic Orbit Group */}

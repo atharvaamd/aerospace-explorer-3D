@@ -396,6 +396,14 @@ export default function CompareModal() {
                   <td className="p-3 font-mono font-semibold text-white">{planetB.axialTilt}°</td>
                   <td className="p-3 text-cyan-300">{Math.abs((planetA.axialTilt || 0) - (planetB.axialTilt || 0)).toFixed(1)}° diff</td>
                 </tr>
+                <tr>
+                  <td className="p-3 text-slate-300 font-medium">Orbital Eccentricity (e)</td>
+                  <td className="p-3 font-mono font-semibold text-white">e = {planetA.eccentricity}</td>
+                  <td className="p-3 font-mono font-semibold text-white">e = {planetB.eccentricity}</td>
+                  <td className="p-3 text-amber-300">
+                    {planetA.eccentricity > planetB.eccentricity ? `${planetA.name} more eccentric` : `${planetB.name} more eccentric`}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
