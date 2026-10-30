@@ -390,6 +390,12 @@ export default function CompareModal() {
                   <td className="p-3 font-mono font-semibold text-white">{planetB.moons}</td>
                   <td className="p-3 text-slate-300">{Math.abs(planetA.moons - planetB.moons)} diff</td>
                 </tr>
+                <tr>
+                  <td className="p-3 text-slate-300 font-medium">Axial Tilt</td>
+                  <td className="p-3 font-mono font-semibold text-white">{planetA.axialTilt}°</td>
+                  <td className="p-3 font-mono font-semibold text-white">{planetB.axialTilt}°</td>
+                  <td className="p-3 text-cyan-300">{Math.abs((planetA.axialTilt || 0) - (planetB.axialTilt || 0)).toFixed(1)}° diff</td>
+                </tr>
               </tbody>
             </table>
           </div>

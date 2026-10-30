@@ -65,7 +65,7 @@ export default function InfoPanel() {
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
         
-        {/* Key Metrics Grid - Requirements 4: Diameter, Distance from Sun, Orbital Period */}
+        {/* Key Metrics Grid */}
         <div className="grid grid-cols-2 gap-2.5">
           {/* Diameter */}
           <div className="p-3 rounded-2xl bg-slate-800/50 border border-slate-700/60">
@@ -113,16 +113,18 @@ export default function InfoPanel() {
             </p>
           </div>
 
-          {/* Rotation Period (Day length) */}
+          {/* Day Length & Axial Tilt */}
           <div className="p-3 rounded-2xl bg-slate-800/50 border border-slate-700/60">
             <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1">
               <Layers className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Day Length</span>
+              <span>Day & Tilt</span>
             </div>
             <p className="text-sm font-bold text-white font-mono">
               {selectedPlanet.rotationPeriod}
             </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Axial rotation</p>
+            <p className="text-[10px] text-cyan-300 mt-0.5">
+              {selectedPlanet.axialTilt !== undefined ? `${selectedPlanet.axialTilt}° axial tilt` : 'Axial rotation'}
+            </p>
           </div>
 
           {/* Surface Temperature */}
