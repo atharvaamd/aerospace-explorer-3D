@@ -5,10 +5,12 @@ import {
   RotateCcw,
   Gauge,
   Calendar,
-  ChevronRight,
+  FastForward,
+  Sparkles,
 } from 'lucide-react';
 import { useSpaceStore } from '../../store/useSpaceStore';
 import { PLANETS_DATA } from '../../data/planets';
+import { formatSimulatedDate } from '../../utils/astronomy';
 
 export default function ControlsOverLay() {
   const {
@@ -20,19 +22,11 @@ export default function ControlsOverLay() {
     resetView,
     selectedPlanet,
     setSelectedPlanet,
+    openTimeTravel,
+    jumpYears,
   } = useSpaceStore();
 
   const speedPresets = [0.25, 0.5, 1, 2, 5, 10];
-
-  // Format simulated time into days and years
-  const formatTime = (days) => {
-    const totalDays = Math.floor(days);
-    const years = (totalDays / 365.25).toFixed(1);
-    if (totalDays < 365) {
-      return `${totalDays} Days`;
-    }
-    return `${years} Earth Yrs (${totalDays}d)`;
-  };
 
   return (
     <div className="fixed bottom-4 left-0 right-0 z-30 px-4 pointer-events-none">
@@ -63,11 +57,11 @@ export default function ControlsOverLay() {
         </div>
 
         {/* Main Playback & Speed Controls Dock */}
-        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5 px-5 py-2.5 bg-slate-900/90 backdrop-blur-2xl border border-cyan-500/30 rounded-2xl shadow-2xl">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 md:gap-4 px-4 py-2.5 bg-slate-900/90 backdrop-blur-2xl border border-cyan-500/30 rounded-2xl shadow-2xl">
           {/* Play / Pause Toggle */}
           <button
             onClick={togglePause}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-lg ${
               isPaused
                 ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/30'
                 : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-cyan-500/30 animate-pulse'
@@ -104,8 +98,8 @@ export default function ControlsOverLay() {
             ))}
           </div>
 
-          {/* Speed Slider for Granular Adjustment */}
-          <div className="hidden sm:flex items-center gap-2">
+          {/* Speed Slider */}
+          <div className="hidden lg:flex items-center gap-2">
             <span className="text-[11px] text-slate-400">Speed:</span>
             <input
               type="range"
@@ -114,22 +108,43 @@ export default function ControlsOverLay() {
               step="0.1"
               value={speedFactor}
               onChange={(e) => setSpeedFactor(parseFloat(e.target.value))}
-              className="w-24 accent-cyan-400 h-1.5 bg-slate-700 rounded-lg cursor-pointer"
+              className="w-20 accent-cyan-400 h-1.5 bg-slate-700 rounded-lg cursor-pointer"
             />
-            <span className="text-xs font-mono text-cyan-400 w-8">
-              {speedFactor}x
-            </span>
           </div>
 
-          {/* Simulated Time Counter */}
-          <div className="flex items-center gap-2 px-3 py-1 bg-slate-800/60 rounded-xl border border-slate-700 text-slate-300">
-            <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-            <div className="text-[11px]">
-              <span className="text-slate-400">Sim Time: </span>
-              <span className="font-mono font-semibold text-cyan-300">
-                {formatTime(simulatedDays)}
+          {/* Calendar Date & Time Travel Launcher */}
+          <button
+            onClick={openTimeTravel}
+            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-slate-800 to-cyan-950/60 hover:from-slate-750 hover:to-cyan-900/70 rounded-xl border border-cyan-500/40 text-slate-200 transition-all shadow-md group"
+            title="Open Temporal Navigation & Planetary Alignment"
+          >
+            <Calendar className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+            <div className="text-left text-xs">
+              <span className="font-mono font-bold text-white tracking-tight">
+                {formatSimulatedDate(simulatedDays)}
               </span>
             </div>
+            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 ml-1">
+              Jump Date
+            </span>
+          </button>
+
+          {/* Quick Jump Buttons (+10y, +50y) */}
+          <div className="hidden sm:flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700">
+            <button
+              onClick={() => jumpYears(10)}
+              className="px-2 py-1 rounded-lg text-xs font-bold text-cyan-300 hover:text-white hover:bg-cyan-500/20 transition-all"
+              title="Jump 10 years forward"
+            >
+              +10y
+            </button>
+            <button
+              onClick={() => jumpYears(50)}
+              className="px-2 py-1 rounded-lg text-xs font-bold text-cyan-300 hover:text-white hover:bg-cyan-500/20 transition-all"
+              title="Jump 50 years forward"
+            >
+              +50y
+            </button>
           </div>
 
           {/* Reset Camera Button */}

@@ -92,6 +92,22 @@ function CosmicNebula() {
   );
 }
 
+// Master simulation timeline clock
+function SimulationClock() {
+  const isPaused = useSpaceStore((state) => state.isPaused);
+  const speedFactor = useSpaceStore((state) => state.speedFactor);
+  const incrementDays = useSpaceStore((state) => state.incrementDays);
+
+  useFrame((_, delta) => {
+    if (!isPaused) {
+      // 1 real second = 12 simulated Earth days at 1x speed
+      incrementDays(delta * speedFactor * 12);
+    }
+  });
+
+  return null;
+}
+
 export default function Solarsystem() {
   const controlsRef = useRef();
   const resetView = useSpaceStore((state) => state.resetView);
@@ -147,6 +163,9 @@ export default function Solarsystem() {
 
         {/* Dynamic camera focusing logic */}
         <CameraController controlsRef={controlsRef} />
+
+        {/* Master simulation timeline clock */}
+        <SimulationClock />
 
         {/* Deep space cosmic nebula backdrop */}
         <CosmicNebula />

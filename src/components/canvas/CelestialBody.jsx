@@ -4,6 +4,7 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useSpaceStore } from '../../store/useSpaceStore';
 import { setPlanetPosition } from '../../utils/planetRegistry';
+import { getPlanetOrbitalAngle } from '../../utils/astronomy';
 import OrbitLine from './OrbitLine';
 import AtmosphereGlow from './AtmosphereGlow';
 import {
@@ -32,12 +33,7 @@ export default function CelestialBody({ planet }) {
   const innerCoronaRef = useRef();
   const outerCoronaRef = useRef();
 
-  // Initial random orbit offset so planets don't start in a straight line
-  const orbitAngle = useRef(
-    useMemo(() => (planet.distanceFromSun === 0 ? 0 : Math.random() * Math.PI * 2), [planet.distanceFromSun])
-  );
-
-  // CRITICAL: Use granular selectors so CelestialBody NEVER re-renders on simulatedDays frame ticks!
+  // Granular store selectors (prevents unnecessary React re-renders)
   const isPaused = useSpaceStore((state) => state.isPaused);
   const speedFactor = useSpaceStore((state) => state.speedFactor);
   const selectedPlanet = useSpaceStore((state) => state.selectedPlanet);
@@ -47,7 +43,6 @@ export default function CelestialBody({ planet }) {
   const showOrbits = useSpaceStore((state) => state.showOrbits);
   const showLabels = useSpaceStore((state) => state.showLabels);
   const isCompareOpen = useSpaceStore((state) => state.isCompareOpen);
-  const incrementDays = useSpaceStore((state) => state.incrementDays);
 
   const isSelected = selectedPlanet?.id === planet.id;
   const isHovered = hoveredPlanet?.id === planet.id;
@@ -91,21 +86,20 @@ export default function CelestialBody({ planet }) {
   }, [planet.axialTilt]);
 
   useFrame((state, delta) => {
-    // 1. Orbital motion around Sun
-    if (!isPaused && planet.orbitalSpeed > 0) {
-      orbitAngle.current += delta * planet.orbitalSpeed * speedFactor * 0.8;
+    // 1. Exact Keplerian orbital calculation based on simulated timeline (supports date jumps!)
+    const currentDays = useSpaceStore.getState().simulatedDays;
 
-      if (planet.id === 'earth') {
-        incrementDays(delta * speedFactor * 2.5);
+    if (planet.distanceFromSun > 0 && planet.orbitalPeriod > 0) {
+      const angle = getPlanetOrbitalAngle(planet.id, currentDays);
+      const x = Math.cos(angle) * planet.distanceFromSun;
+      const z = Math.sin(angle) * planet.distanceFromSun;
+
+      if (planetOrbitGroupRef.current) {
+        planetOrbitGroupRef.current.position.set(x, 0, z);
+        setPlanetPosition(planet.id, x, 0, z);
       }
-    }
-
-    const x = Math.cos(orbitAngle.current) * planet.distanceFromSun;
-    const z = Math.sin(orbitAngle.current) * planet.distanceFromSun;
-
-    if (planetOrbitGroupRef.current) {
-      planetOrbitGroupRef.current.position.set(x, 0, z);
-      setPlanetPosition(planet.id, x, 0, z);
+    } else if (planet.id === 'sun') {
+      setPlanetPosition('sun', 0, 0, 0);
     }
 
     // 2. Axial rotation
@@ -199,7 +193,7 @@ export default function CelestialBody({ planet }) {
             )}
           </mesh>
 
-          {/* Earth Rotating Clouds Layer (Sibling mesh with explicit renderOrder and depthWrite:false) */}
+          {/* Earth Rotating Clouds Layer */}
           {planet.id === 'earth' && textures.clouds && (
             <mesh ref={cloudsRef} scale={[1.026, 1.026, 1.026]} renderOrder={5}>
               <sphereGeometry args={[planet.size, 48, 48]} />
@@ -213,7 +207,7 @@ export default function CelestialBody({ planet }) {
             </mesh>
           )}
 
-          {/* Saturn Rings with Cassini Division (Sibling mesh on equatorial plane) */}
+          {/* Saturn Rings with Cassini Division */}
           {planet.hasRings && textures.ring && (
             <mesh rotation-x={Math.PI / 2} renderOrder={3}>
               <ringGeometry args={[planet.ringInnerRadius, planet.ringOuterRadius, 128]} />
@@ -227,7 +221,7 @@ export default function CelestialBody({ planet }) {
             </mesh>
           )}
 
-          {/* Uranus Ice Ring (Sibling mesh on equatorial plane) */}
+          {/* Uranus Ice Ring */}
           {planet.hasFaintRing && (
             <mesh rotation-x={Math.PI / 2} renderOrder={3}>
               <ringGeometry args={[planet.ringInnerRadius, planet.ringOuterRadius, 64]} />
@@ -241,7 +235,7 @@ export default function CelestialBody({ planet }) {
             </mesh>
           )}
 
-          {/* Atmospheric Fresnel Limb Glow (Deterministic renderOrder={10}) */}
+          {/* Atmospheric Fresnel Limb Glow */}
           {planet.atmosphereGlow && (
             <AtmosphereGlow
               radius={planet.size}
@@ -310,7 +304,7 @@ export default function CelestialBody({ planet }) {
           )}
         </group>
 
-        {/* 3D Targeting / Selection Reticle (Raised by y=0.03 to avoid orbit line z-fighting) */}
+        {/* 3D Targeting / Selection Reticle */}
         {(isSelected || isHovered) && (
           <mesh rotation-x={Math.PI / 2} position={[0, 0.03, 0]} renderOrder={6}>
             <ringGeometry args={[planet.size * 1.45, planet.size * 1.54, 64]} />

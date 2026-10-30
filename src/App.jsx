@@ -5,6 +5,7 @@ import ControlsOverLay from './components/ui/ControlsOverLay';
 import InfoPanel from './components/ui/InfoPanel';
 import CompareModal from './components/ui/CompareModal';
 import CameraControlsWidget from './components/ui/CameraControlsWidget';
+import TimeTravelModal from './components/ui/TimeTravelModal';
 
 export default function App() {
   return (
@@ -26,6 +27,9 @@ export default function App() {
 
       {/* Side-by-Side Planet Comparison Modal with Recharts Visual Charts */}
       <CompareModal />
+
+      {/* Time Travel & Planetary Alignment Modal */}
+      <TimeTravelModal />
     </main>
   );
 }

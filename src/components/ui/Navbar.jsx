@@ -9,6 +9,7 @@ import {
   Sparkles,
   X,
   Orbit,
+  Calendar,
 } from 'lucide-react';
 import { useSpaceStore } from '../../store/useSpaceStore';
 import { PLANETS_DATA } from '../../data/planets';
@@ -25,6 +26,7 @@ export default function Navbar() {
     setSelectedPlanet,
     resetView,
     openCompare,
+    openTimeTravel,
     showOrbits,
     toggleOrbits,
     showLabels,
@@ -171,6 +173,16 @@ export default function Navbar() {
 
         {/* Global Toolbar Action Controls */}
         <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-xl border border-slate-700/80 p-1.5 rounded-2xl shadow-xl">
+          {/* Time Travel Button */}
+          <button
+            onClick={() => openTimeTravel()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600/30 to-orange-600/30 hover:from-amber-500/50 hover:to-orange-500/50 border border-amber-500/40 text-amber-300 hover:text-white text-xs font-semibold transition-all shadow-sm"
+            title="Jump forward 10-50 years & check planetary alignment"
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Time Travel</span>
+          </button>
+
           {/* Compare Modal Button */}
           <button
             onClick={() => openCompare()}

@@ -9,7 +9,10 @@ export const useSpaceStore = create((set) => ({
   // Animation & simulation controls
   isPaused: false,
   speedFactor: 1,
-  simulatedDays: 0,
+  simulatedDays: 0, // Days elapsed from Jan 1, 2026 baseline epoch
+
+  // Time Travel Modal
+  isTimeTravelOpen: false,
 
   // Display toggles
   showOrbits: true,
@@ -41,6 +44,15 @@ export const useSpaceStore = create((set) => ({
   incrementDays: (amount) => set((state) => ({ 
     simulatedDays: state.simulatedDays + amount 
   })),
+
+  setSimulatedDays: (days) => set({ simulatedDays: days }),
+
+  jumpYears: (years) => set((state) => ({
+    simulatedDays: state.simulatedDays + years * 365.25,
+  })),
+
+  openTimeTravel: () => set({ isTimeTravelOpen: true }),
+  closeTimeTravel: () => set({ isTimeTravelOpen: false }),
 
   toggleOrbits: () => set((state) => ({ showOrbits: !state.showOrbits })),
   toggleLabels: () => set((state) => ({ showLabels: !state.showLabels })),
