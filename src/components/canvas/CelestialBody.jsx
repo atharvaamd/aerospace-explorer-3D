@@ -37,23 +37,22 @@ export default function CelestialBody({ planet }) {
     useMemo(() => (planet.distanceFromSun === 0 ? 0 : Math.random() * Math.PI * 2), [planet.distanceFromSun])
   );
 
-  const {
-    isPaused,
-    speedFactor,
-    selectedPlanet,
-    setSelectedPlanet,
-    hoveredPlanet,
-    setHoveredPlanet,
-    showOrbits,
-    showLabels,
-    incrementDays,
-    isCompareOpen,
-  } = useSpaceStore();
+  // CRITICAL: Use granular selectors so CelestialBody NEVER re-renders on simulatedDays frame ticks!
+  const isPaused = useSpaceStore((state) => state.isPaused);
+  const speedFactor = useSpaceStore((state) => state.speedFactor);
+  const selectedPlanet = useSpaceStore((state) => state.selectedPlanet);
+  const setSelectedPlanet = useSpaceStore((state) => state.setSelectedPlanet);
+  const hoveredPlanet = useSpaceStore((state) => state.hoveredPlanet);
+  const setHoveredPlanet = useSpaceStore((state) => state.setHoveredPlanet);
+  const showOrbits = useSpaceStore((state) => state.showOrbits);
+  const showLabels = useSpaceStore((state) => state.showLabels);
+  const isCompareOpen = useSpaceStore((state) => state.isCompareOpen);
+  const incrementDays = useSpaceStore((state) => state.incrementDays);
 
   const isSelected = selectedPlanet?.id === planet.id;
   const isHovered = hoveredPlanet?.id === planet.id;
 
-  // Retrieve procedural photorealistic textures
+  // Retrieve procedural photorealistic textures (cached)
   const textures = useMemo(() => {
     switch (planet.id) {
       case 'sun':
@@ -142,12 +141,13 @@ export default function CelestialBody({ planet }) {
       {/* Planet Dynamic Orbit Group */}
       <group ref={planetOrbitGroupRef}>
         
-        {/* Axial Tilt Group: Tilts the planet and its rings on their true scientific axis */}
+        {/* Axial Tilt Group: Tilts the planet on its authentic scientific axis */}
         <group ref={tiltGroupRef} rotation={[0, 0, axialTiltRad]}>
           
           {/* Main Planet Sphere */}
           <mesh
             ref={meshRef}
+            renderOrder={1}
             onClick={(e) => {
               e.stopPropagation();
               setSelectedPlanet(planet);
@@ -197,57 +197,57 @@ export default function CelestialBody({ planet }) {
                 metalness={0.08}
               />
             )}
-
-            {/* Earth Rotating Clouds Layer */}
-            {planet.id === 'earth' && textures.clouds && (
-              <mesh ref={cloudsRef}>
-                <sphereGeometry args={[planet.size * 1.022, 48, 48]} />
-                <meshStandardMaterial
-                  map={textures.clouds}
-                  transparent
-                  opacity={0.55}
-                  roughness={1}
-                  depthWrite={false}
-                />
-              </mesh>
-            )}
-
-            {/* Saturn Rings with Cassini Division */}
-            {planet.hasRings && textures.ring && (
-              <mesh rotation-x={Math.PI / 2}>
-                <ringGeometry args={[planet.ringInnerRadius, planet.ringOuterRadius, 128]} />
-                <meshStandardMaterial
-                  map={textures.ring}
-                  transparent
-                  roughness={0.4}
-                  metalness={0.1}
-                  side={THREE.DoubleSide}
-                />
-              </mesh>
-            )}
-
-            {/* Uranus Ice Ring */}
-            {planet.hasFaintRing && (
-              <mesh rotation-x={Math.PI / 2}>
-                <ringGeometry args={[planet.ringInnerRadius, planet.ringOuterRadius, 64]} />
-                <meshStandardMaterial
-                  color="#a5f3fc"
-                  opacity={0.35}
-                  transparent
-                  roughness={0.8}
-                  side={THREE.DoubleSide}
-                />
-              </mesh>
-            )}
           </mesh>
 
-          {/* Atmospheric Fresnel Limb Glow */}
+          {/* Earth Rotating Clouds Layer (Sibling mesh with explicit renderOrder and depthWrite:false) */}
+          {planet.id === 'earth' && textures.clouds && (
+            <mesh ref={cloudsRef} scale={[1.026, 1.026, 1.026]} renderOrder={5}>
+              <sphereGeometry args={[planet.size, 48, 48]} />
+              <meshStandardMaterial
+                map={textures.clouds}
+                transparent
+                opacity={0.55}
+                roughness={1}
+                depthWrite={false}
+              />
+            </mesh>
+          )}
+
+          {/* Saturn Rings with Cassini Division (Sibling mesh on equatorial plane) */}
+          {planet.hasRings && textures.ring && (
+            <mesh rotation-x={Math.PI / 2} renderOrder={3}>
+              <ringGeometry args={[planet.ringInnerRadius, planet.ringOuterRadius, 128]} />
+              <meshStandardMaterial
+                map={textures.ring}
+                transparent
+                roughness={0.4}
+                metalness={0.1}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          )}
+
+          {/* Uranus Ice Ring (Sibling mesh on equatorial plane) */}
+          {planet.hasFaintRing && (
+            <mesh rotation-x={Math.PI / 2} renderOrder={3}>
+              <ringGeometry args={[planet.ringInnerRadius, planet.ringOuterRadius, 64]} />
+              <meshStandardMaterial
+                color="#a5f3fc"
+                opacity={0.35}
+                transparent
+                roughness={0.8}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          )}
+
+          {/* Atmospheric Fresnel Limb Glow (Deterministic renderOrder={10}) */}
           {planet.atmosphereGlow && (
             <AtmosphereGlow
               radius={planet.size}
               color={planet.atmosphereGlow}
               power={planet.id === 'earth' ? 3.0 : 3.5}
-              scale={planet.id === 'earth' ? 1.15 : 1.12}
+              scale={planet.id === 'earth' ? 1.14 : 1.12}
             />
           )}
 
@@ -255,7 +255,7 @@ export default function CelestialBody({ planet }) {
           {planet.id === 'sun' && (
             <>
               {/* Inner golden flare corona */}
-              <mesh ref={innerCoronaRef}>
+              <mesh ref={innerCoronaRef} renderOrder={2}>
                 <sphereGeometry args={[planet.size * 1.14, 32, 32]} />
                 <meshBasicMaterial
                   color="#ffaa00"
@@ -268,7 +268,7 @@ export default function CelestialBody({ planet }) {
               </mesh>
 
               {/* Mid orange radiant corona */}
-              <mesh ref={outerCoronaRef}>
+              <mesh ref={outerCoronaRef} renderOrder={2}>
                 <sphereGeometry args={[planet.size * 1.32, 32, 32]} />
                 <meshBasicMaterial
                   color="#ff5500"
@@ -281,7 +281,7 @@ export default function CelestialBody({ planet }) {
               </mesh>
 
               {/* Outer soft solar wind aura */}
-              <mesh>
+              <mesh renderOrder={2}>
                 <sphereGeometry args={[planet.size * 1.6, 32, 32]} />
                 <meshBasicMaterial
                   color="#cc2200"
@@ -298,7 +298,7 @@ export default function CelestialBody({ planet }) {
           {/* Earth Moon with cratered surface */}
           {planet.id === 'earth' && (
             <group ref={moonGroupRef}>
-              <mesh position={[2.7, 0.4, 0]}>
+              <mesh position={[2.7, 0.4, 0]} renderOrder={1}>
                 <sphereGeometry args={[0.27, 24, 24]} />
                 <meshStandardMaterial
                   map={textures.moon}
@@ -310,9 +310,9 @@ export default function CelestialBody({ planet }) {
           )}
         </group>
 
-        {/* 3D Targeting / Selection Reticle */}
+        {/* 3D Targeting / Selection Reticle (Raised by y=0.03 to avoid orbit line z-fighting) */}
         {(isSelected || isHovered) && (
-          <mesh rotation-x={Math.PI / 2}>
+          <mesh rotation-x={Math.PI / 2} position={[0, 0.03, 0]} renderOrder={6}>
             <ringGeometry args={[planet.size * 1.45, planet.size * 1.54, 64]} />
             <meshBasicMaterial
               color={isSelected ? '#38bdf8' : '#c084fc'}

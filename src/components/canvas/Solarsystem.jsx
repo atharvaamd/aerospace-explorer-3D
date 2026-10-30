@@ -51,7 +51,7 @@ function AsteroidBelt() {
   });
 
   return (
-    <points ref={beltRef}>
+    <points ref={beltRef} renderOrder={1}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -77,11 +77,11 @@ function AsteroidBelt() {
   );
 }
 
-// Deep Space Cosmic Nebula Sphere
+// Deep Space Cosmic Nebula Sphere (Drawn first at renderOrder 0)
 function CosmicNebula() {
   const nebulaTexture = useMemo(() => getNebulaTexture(), []);
   return (
-    <mesh>
+    <mesh renderOrder={0}>
       <sphereGeometry args={[480, 32, 32]} />
       <meshBasicMaterial
         map={nebulaTexture}
